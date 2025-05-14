@@ -46,6 +46,9 @@ class CNNImageModel(nn.Module):
             nn.Linear(128, num_classes)
         )
         
+        # Add adaptive pooling for feature extraction
+        self.adaptive_pool = nn.AdaptiveAvgPool2d((1, 1))
+        
         # Feature extraction size (for fusion models)
         self.feature_dim = 256
     
@@ -53,8 +56,10 @@ class CNNImageModel(nn.Module):
         features = self.features(x)
         
         if return_features:
-            # Return flattened features for fusion
-            return features.view(x.size(0), -1)
+            # Return properly dimensioned features for fusion
+            # Apply adaptive pooling and flatten
+            pooled_features = self.adaptive_pool(features)
+            return pooled_features.view(x.size(0), -1)
         else:
             # Return class predictions
             return self.classifier(features)

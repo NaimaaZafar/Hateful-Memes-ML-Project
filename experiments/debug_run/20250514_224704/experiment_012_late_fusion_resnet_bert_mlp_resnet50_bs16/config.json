@@ -1,0 +1,16 @@
+{
+    "train_jsonl": "data/train.jsonl",
+    "val_jsonl": "data/dev.jsonl",
+    "img_dir": "data",
+    "epochs": 1,
+    "learning_rate": 2e-05,
+    "seed": 42,
+    "device": "cpu",
+    "weighted_loss": false,
+    "model_type": "late_fusion",
+    "image_model": "resnet",
+    "text_model": "bert",
+    "fusion_method": "mlp",
+    "resnet_variant": "resnet50",
+    "batch_size": 16
+}

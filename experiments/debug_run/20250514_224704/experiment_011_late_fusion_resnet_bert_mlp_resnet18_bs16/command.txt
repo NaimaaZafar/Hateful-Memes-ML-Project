@@ -1,0 +1,1 @@
+python train.py --train_jsonl data/train.jsonl --val_jsonl data/dev.jsonl --img_dir data --epochs 1 --learning_rate 2e-05 --seed 42 --device cpu --model_type late_fusion --image_model resnet --text_model bert --fusion_method mlp --resnet_variant resnet18 --batch_size 16 --output_dir experiments/debug_run\20250514_224704\experiment_011_late_fusion_resnet_bert_mlp_resnet18_bs16
