@@ -212,7 +212,7 @@ def main():
     # Data paths
     parser.add_argument("--train_jsonl", default="data/train.jsonl", help="Path to training JSONL file")
     parser.add_argument("--val_jsonl", default="data/dev.jsonl", help="Path to validation JSONL file")
-    parser.add_argument("--img_dir", default="data/img", help="Path to image directory")
+    parser.add_argument("--img_dir", default="data", help="Path to image directory")
     parser.add_argument("--output_dir", default="results", help="Output directory for models and results")
     
     # Model configuration

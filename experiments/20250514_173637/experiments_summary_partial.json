@@ -1,0 +1,63 @@
+[
+    {
+        "experiment_id": "001_early_fusion_cnn_bert_bs16",
+        "config": {
+            "train_jsonl": "data/train.jsonl",
+            "val_jsonl": "data/dev.jsonl",
+            "img_dir": "data/img",
+            "epochs": 20,
+            "learning_rate": 2e-05,
+            "seed": 42,
+            "device": "cuda",
+            "weighted_loss": false,
+            "model_type": "early_fusion",
+            "image_model": "cnn",
+            "text_model": "bert",
+            "batch_size": 16
+        },
+        "output_dir": "experiments/20250514_173637/experiment_001_early_fusion_cnn_bert_bs16",
+        "return_code": 1,
+        "success": false
+    },
+    {
+        "experiment_id": "002_early_fusion_cnn_lstm_bs16",
+        "config": {
+            "train_jsonl": "data/train.jsonl",
+            "val_jsonl": "data/dev.jsonl",
+            "img_dir": "data/img",
+            "epochs": 20,
+            "learning_rate": 2e-05,
+            "seed": 42,
+            "device": "cuda",
+            "weighted_loss": false,
+            "model_type": "early_fusion",
+            "image_model": "cnn",
+            "text_model": "lstm",
+            "batch_size": 16
+        },
+        "output_dir": "experiments/20250514_173637/experiment_002_early_fusion_cnn_lstm_bs16",
+        "return_code": 1,
+        "success": false
+    },
+    {
+        "experiment_id": "003_early_fusion_resnet_bert_resnet18_bs16",
+        "config": {
+            "train_jsonl": "data/train.jsonl",
+            "val_jsonl": "data/dev.jsonl",
+            "img_dir": "data/img",
+            "epochs": 20,
+            "learning_rate": 2e-05,
+            "seed": 42,
+            "device": "cuda",
+            "weighted_loss": false,
+            "model_type": "early_fusion",
+            "image_model": "resnet",
+            "text_model": "bert",
+            "resnet_variant": "resnet18",
+            "batch_size": 16
+        },
+        "output_dir": "experiments/20250514_173637/experiment_003_early_fusion_resnet_bert_resnet18_bs16",
+        "return_code": 1,
+        "success": false
+    }
+]
