@@ -1,0 +1,5 @@
+CUDA available: True
+GPU count: 1
+GPU 0: Tesla T4
+Total memory: 14.58 GB
+CUDA version: 12.8

@@ -1,0 +1,1 @@
+python train.py --train_jsonl data/train.jsonl --val_jsonl data/dev.jsonl --img_dir data/img --epochs 20 --learning_rate 2e-05 --seed 42 --device cuda --model_type early_fusion --image_model resnet --text_model lstm --resnet_variant resnet50 --batch_size 16 --output_dir experiments/20250514_173853/experiment_006_early_fusion_resnet_lstm_resnet50_bs16

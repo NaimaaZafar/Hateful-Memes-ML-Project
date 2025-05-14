@@ -393,7 +393,7 @@ def main():
     parser.add_argument("--experiments_dir", default="experiments", help="Directory to store experiment results")
     parser.add_argument("--train_jsonl", default="data/train.jsonl", help="Path to training data")
     parser.add_argument("--val_jsonl", default="data/dev.jsonl", help="Path to validation data")
-    parser.add_argument("--img_dir", default="data/img", help="Path to image directory")
+    parser.add_argument("--img_dir", default="data", help="Path to image directory")
     parser.add_argument("--batch_sizes", nargs="+", type=int, default=[16, 32, 64], 
                       help="Batch sizes to test (default: 16, 32, 64)")
     parser.add_argument("--epochs", type=int, default=3, help="Number of epochs to train (default: 3)")
