@@ -53,6 +53,7 @@ python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords'); nltk
 - `utils/` - Utility functions for data loading, preprocessing, and visualization
 - `train.py` - Script for training models
 - `evaluate.py` - Script for evaluating trained models
+- `run_experiments.py` - Script for running comprehensive model comparisons
 
 ## Usage
 
@@ -91,6 +92,40 @@ To evaluate a trained model on the validation set:
 ```bash
 python evaluate.py --checkpoint results/early_fusion/early_fusion_best.pth --model_type early_fusion --output_dir results/evaluation
 ```
+
+### Running Comprehensive Experiments
+
+To automatically test all model combinations with different batch sizes (16, 32, 64):
+
+```bash
+python run_experiments.py --epochs 5
+```
+
+The script will test all possible combinations of:
+- Model types: early fusion, late fusion, attention fusion
+- Image models: CNN, ResNet (ResNet18, ResNet50)
+- Text models: LSTM, BERT
+- Fusion methods: weighted sum, concat, MLP (for late fusion)
+- Batch sizes: 16, 32, 64
+
+You can customize parameters:
+
+```bash
+# Test with different batch sizes
+python run_experiments.py --batch_sizes 8 16 32 --epochs 3
+
+# Test with specific data paths
+python run_experiments.py --train_jsonl custom/train.jsonl --val_jsonl custom/dev.jsonl
+
+# Test with weighted loss for class imbalance
+python run_experiments.py --weighted_loss
+```
+
+Experiment results are saved in the `experiments/[timestamp]` directory, including:
+- `experiments_summary.json` - Details of all experiments
+- `experiments_report.md` - Overview of all experiments with success status
+- `performance_report.md` - Detailed comparison of model performance
+- Individual experiment directories with model checkpoints and evaluation metrics
 
 ## Model Architectures
 
