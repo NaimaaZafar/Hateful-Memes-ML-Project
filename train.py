@@ -24,7 +24,7 @@ transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
 ])
-train_data = HatefulMemesDataset('data/train.jsonl', 'data', tokenizer, transform)
+train_data = HatefulMemesDataset('data/train.jsonl', 'hateful_memes/data', tokenizer, transform)
 train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
 
 image_model = ImageModel()
