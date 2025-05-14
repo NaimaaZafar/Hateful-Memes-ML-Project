@@ -98,7 +98,7 @@ python evaluate.py --checkpoint results/early_fusion/early_fusion_best.pth --mod
 To automatically test all model combinations with different batch sizes (16, 32, 64):
 
 ```bash
-python run_experiments.py --epochs 5
+python run_experiments.py --epochs 3
 ```
 
 The script will test all possible combinations of:
@@ -119,6 +119,9 @@ python run_experiments.py --train_jsonl custom/train.jsonl --val_jsonl custom/de
 
 # Test with weighted loss for class imbalance
 python run_experiments.py --weighted_loss
+
+# Skip LSTM models (faster experiments, lower memory requirements)
+python run_experiments.py --skip_lstm
 ```
 
 Experiment results are saved in the `experiments/[timestamp]` directory, including:
@@ -126,6 +129,16 @@ Experiment results are saved in the `experiments/[timestamp]` directory, includi
 - `experiments_report.md` - Overview of all experiments with success status
 - `performance_report.md` - Detailed comparison of model performance
 - Individual experiment directories with model checkpoints and evaluation metrics
+
+#### Note on LSTM Models
+
+LSTM models require more memory than BERT models and may be slower to train. If you encounter memory issues, you can use the `--skip_lstm` flag to exclude LSTM models from your experiments:
+
+```bash
+python run_experiments.py --skip_lstm
+```
+
+This will run experiments only with BERT as the text model, which is generally more efficient and powerful for this task.
 
 ## Model Architectures
 

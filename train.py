@@ -291,9 +291,8 @@ def main():
         
     # Create text model
     if args.text_model == 'lstm':
-        # For LSTM, we'd need a vocabulary - using a simplified version here
-        # You'd typically build this from your training data
-        text_model = LSTMTextModel(vocab_size=10000)  # Simplified
+        # For LSTM, pass the tokenizer to properly set vocabulary size
+        text_model = LSTMTextModel(vocab_size=30522, tokenizer=tokenizer)  # Default BERT vocab size as fallback
     else:  # Default: BERT
         text_model = BERTTextModel(model_name=args.bert_variant)
         

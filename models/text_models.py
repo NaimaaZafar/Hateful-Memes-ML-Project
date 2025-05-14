@@ -8,8 +8,14 @@ from transformers import RobertaModel, RobertaConfig
 
 class LSTMTextModel(nn.Module):
     def __init__(self, vocab_size, embedding_dim=300, hidden_dim=256, num_layers=2, 
-                 bidirectional=True, dropout=0.5, num_classes=2, pretrained_embeddings=None):
+                 bidirectional=True, dropout=0.5, num_classes=2, pretrained_embeddings=None, 
+                 tokenizer=None):
         super(LSTMTextModel, self).__init__()
+        
+        # If a tokenizer is provided, use its vocabulary size
+        if tokenizer is not None:
+            vocab_size = len(tokenizer.vocab) if hasattr(tokenizer, 'vocab') else tokenizer.vocab_size
+            print(f"Using tokenizer vocabulary size: {vocab_size}")
         
         # Embedding layer
         if pretrained_embeddings is not None:

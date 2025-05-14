@@ -174,8 +174,8 @@ def main(args):
             
         # Create text model
         if args.text_model == 'lstm':
-            # For LSTM, we'd need vocabulary - this is simplified
-            text_model = LSTMTextModel(vocab_size=10000)  # Simplified
+            # For LSTM, pass the tokenizer to properly set vocabulary size
+            text_model = LSTMTextModel(vocab_size=30522, tokenizer=tokenizer)  # Default BERT vocab size as fallback
         else:  # Default: BERT
             text_model = BERTTextModel(model_name=args.bert_variant)
             
@@ -191,8 +191,8 @@ def main(args):
             
         # Create text model
         if args.text_model == 'lstm':
-            # For LSTM, we'd need vocabulary - this is simplified
-            text_model = LSTMTextModel(vocab_size=10000)  # Simplified
+            # For LSTM, pass the tokenizer to properly set vocabulary size
+            text_model = LSTMTextModel(vocab_size=30522, tokenizer=tokenizer)  # Default BERT vocab size as fallback
         else:  # Default: BERT
             text_model = BERTTextModel(model_name=args.bert_variant)
             
@@ -208,8 +208,8 @@ def main(args):
             
         # Create text model
         if args.text_model == 'lstm':
-            # For LSTM, we'd need vocabulary - this is simplified
-            text_model = LSTMTextModel(vocab_size=10000)  # Simplified
+            # For LSTM, pass the tokenizer to properly set vocabulary size
+            text_model = LSTMTextModel(vocab_size=30522, tokenizer=tokenizer)  # Default BERT vocab size as fallback
         else:  # Default: BERT
             text_model = BERTTextModel(model_name=args.bert_variant)
             

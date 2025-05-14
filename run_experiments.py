@@ -9,6 +9,7 @@ import subprocess
 import time
 from datetime import datetime
 from pathlib import Path
+import torch
 
 def run_experiment(args_dict, base_output_dir, experiment_id):
     """
@@ -88,12 +89,16 @@ def run_experiment(args_dict, base_output_dir, experiment_id):
             # Add batch size for evaluation
             eval_cmd.extend(["--batch_size", str(args_dict["batch_size"])])
                 
+            # Pass device parameter to evaluation
+            if "device" in args_dict:
+                eval_cmd.extend(["--device", args_dict["device"]])
+                
             print(f"\nEvaluating model: {' '.join(eval_cmd)}")
             subprocess.call(eval_cmd)
     
     return return_code, exp_dir
 
-def run_all_experiments(base_args, experiments_dir, batch_sizes=[16, 32, 64]):
+def run_all_experiments(base_args, experiments_dir, batch_sizes=[16, 32, 64], skip_lstm=False):
     """
     Run all combinations of experiments with different parameters
     
@@ -101,19 +106,55 @@ def run_all_experiments(base_args, experiments_dir, batch_sizes=[16, 32, 64]):
         base_args: Base arguments to use for all experiments
         experiments_dir: Directory to save experiment results
         batch_sizes: List of batch sizes to test
+        skip_lstm: Whether to skip LSTM model experiments (these can be slower and require more memory)
     """
     # Create the experiments directory
     os.makedirs(experiments_dir, exist_ok=True)
     
+    # Log GPU information if available
+    if torch.cuda.is_available():
+        gpu_count = torch.cuda.device_count()
+        gpu_info = []
+        for i in range(gpu_count):
+            gpu_name = torch.cuda.get_device_name(i)
+            gpu_info.append(f"GPU {i}: {gpu_name}")
+        
+        total_memory = torch.cuda.get_device_properties(0).total_memory / (1024**3)  # In GB
+        print(f"\n🚀 CUDA is available! Found {gpu_count} GPU(s):")
+        for info in gpu_info:
+            print(f"  - {info}")
+        print(f"  - Total memory: {total_memory:.2f} GB")
+        
+        # Save GPU info to file
+        with open(os.path.join(experiments_dir, "gpu_info.txt"), "w") as f:
+            f.write(f"CUDA available: {torch.cuda.is_available()}\n")
+            f.write(f"GPU count: {gpu_count}\n")
+            for info in gpu_info:
+                f.write(f"{info}\n")
+            f.write(f"Total memory: {total_memory:.2f} GB\n")
+            f.write(f"CUDA version: {torch.version.cuda}\n")
+    else:
+        print("\n⚠️ CUDA is not available. Running on CPU only.")
+        with open(os.path.join(experiments_dir, "gpu_info.txt"), "w") as f:
+            f.write("CUDA available: False\n")
+            f.write("Running on CPU\n")
+    
     # Define parameter combinations to try
     all_configs = []
+    
+    # Define text models to test
+    text_models = ["bert"]
+    if not skip_lstm:
+        text_models.append("lstm")
+        print("\n⚠️ Warning: Including LSTM models in experiments. These may be slower and require more memory.")
+        print("    If you encounter out-of-memory errors, consider re-running with --skip_lstm flag.\n")
     
     # 1. Early fusion experiments
     early_fusion_configs = []
     
     # Early fusion with different image and text models
     for image_model in ["cnn", "resnet"]:
-        for text_model in ["lstm", "bert"]:
+        for text_model in text_models:
             config = base_args.copy()
             config.update({
                 "model_type": "early_fusion",
@@ -135,7 +176,7 @@ def run_all_experiments(base_args, experiments_dir, batch_sizes=[16, 32, 64]):
     
     # Late fusion with different image and text models and fusion methods
     for image_model in ["cnn", "resnet"]:
-        for text_model in ["lstm", "bert"]:
+        for text_model in text_models:
             for fusion_method in ["weighted_sum", "concat", "mlp"]:
                 config = base_args.copy()
                 config.update({
@@ -159,7 +200,7 @@ def run_all_experiments(base_args, experiments_dir, batch_sizes=[16, 32, 64]):
     
     # Attention fusion with different image and text models
     for image_model in ["cnn", "resnet"]:
-        for text_model in ["lstm", "bert"]:
+        for text_model in text_models:
             config = base_args.copy()
             config.update({
                 "model_type": "attention_fusion",
@@ -209,6 +250,22 @@ def run_all_experiments(base_args, experiments_dir, batch_sizes=[16, 32, 64]):
             new_config["batch_size"] = batch_size
             all_configs.append(new_config)
     
+    # Print experiment summary
+    print(f"\nPreparing to run {len(all_configs)} experiments:")
+    print(f"- {len(early_fusion_configs)} early fusion configurations")
+    print(f"- {len(late_fusion_configs)} late fusion configurations")
+    print(f"- {len(attention_fusion_configs)} attention fusion configurations")
+    print(f"- {len(augmentation_configs)} augmentation configurations")
+    print(f"- Testing {len(batch_sizes)} batch sizes: {batch_sizes}")
+    print(f"- Device: {base_args.get('device', 'cuda if available, else cpu')}")
+    
+    # Ask for confirmation before starting
+    if len(all_configs) > 10:
+        response = input(f"\nAre you sure you want to run {len(all_configs)} experiments? This may take a long time. (y/n): ")
+        if response.lower() != 'y':
+            print("Experiments cancelled.")
+            return
+    
     # Run each experiment
     results = []
     for i, config in enumerate(all_configs):
@@ -235,6 +292,10 @@ def run_all_experiments(base_args, experiments_dir, batch_sizes=[16, 32, 64]):
             "return_code": return_code,
             "success": return_code == 0
         })
+        
+        # Save intermediate results after each experiment
+        with open(os.path.join(experiments_dir, "experiments_summary_partial.json"), "w") as f:
+            json.dump(results, f, indent=4)
     
     # Write summary of all experiments
     with open(os.path.join(experiments_dir, "experiments_summary.json"), "w") as f:
@@ -324,6 +385,10 @@ def run_all_experiments(base_args, experiments_dir, batch_sizes=[16, 32, 64]):
 def main():
     parser = argparse.ArgumentParser(description="Run a comprehensive set of experiments for hateful memes detection")
     
+    # Check for GPU availability
+    gpu_available = torch.cuda.is_available()
+    default_device = "cuda" if gpu_available else "cpu"
+    
     # Base training parameters
     parser.add_argument("--experiments_dir", default="experiments", help="Directory to store experiment results")
     parser.add_argument("--train_jsonl", default="data/train.jsonl", help="Path to training data")
@@ -331,18 +396,37 @@ def main():
     parser.add_argument("--img_dir", default="data/img", help="Path to image directory")
     parser.add_argument("--batch_sizes", nargs="+", type=int, default=[16, 32, 64], 
                       help="Batch sizes to test (default: 16, 32, 64)")
-    parser.add_argument("--epochs", type=int, default=5, help="Number of epochs to train")
+    parser.add_argument("--epochs", type=int, default=3, help="Number of epochs to train (default: 3)")
     parser.add_argument("--learning_rate", type=float, default=2e-5, help="Learning rate")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
-    parser.add_argument("--device", default="cuda" if os.environ.get("CUDA_VISIBLE_DEVICES") else "cpu", 
-                     help="Device to use (cuda or cpu)")
+    parser.add_argument("--device", default=default_device, 
+                     help=f"Device to use (cuda or cpu, default: {default_device})")
     parser.add_argument("--weighted_loss", action="store_true", help="Use weighted loss for class imbalance")
+    parser.add_argument("--skip_lstm", action="store_true", help="Skip LSTM models (faster experiments)")
+    parser.add_argument("--use_amp", action="store_true", help="Use automatic mixed precision (faster on compatible GPUs)")
     
     args = parser.parse_args()
     
     # Create a timestamp for this experiment run
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     experiments_dir = os.path.join(args.experiments_dir, timestamp)
+    
+    # Verify GPU availability if requested
+    if args.device == "cuda" and not torch.cuda.is_available():
+        print("⚠️ Warning: CUDA device requested but not available. Falling back to CPU.")
+        args.device = "cpu"
+    
+    # Print GPU info if using CUDA
+    if args.device == "cuda":
+        print(f"✅ Using CUDA - Found {torch.cuda.device_count()} device(s)")
+        for i in range(torch.cuda.device_count()):
+            print(f"  - GPU {i}: {torch.cuda.get_device_name(i)}")
+        
+        # Check for mixed precision support
+        if args.use_amp:
+            print("✅ Using automatic mixed precision (AMP) for faster training")
+    else:
+        print("⚠️ Using CPU - training will be much slower")
     
     # Convert arguments to a dictionary for experiments
     base_args = {
@@ -356,8 +440,12 @@ def main():
         "weighted_loss": args.weighted_loss
     }
     
+    # Add AMP flag if requested and supported
+    if args.use_amp and args.device == "cuda":
+        base_args["use_amp"] = True
+    
     # Run all experiments with specified batch sizes
-    run_all_experiments(base_args, experiments_dir, batch_sizes=args.batch_sizes)
+    run_all_experiments(base_args, experiments_dir, batch_sizes=args.batch_sizes, skip_lstm=args.skip_lstm)
 
 if __name__ == "__main__":
     main() 
