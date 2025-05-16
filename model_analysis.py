@@ -200,17 +200,50 @@ def visualize_model_architecture(model, input_shape, title, output_file):
         model_summary = summary(model, input_shape, verbose=0, depth=6)
         f.write(str(model_summary))
 
+def find_experiment_directories():
+    """
+    Find all experiment directories in the project
+    
+    Returns:
+        List of experiment directory paths
+    """
+    experiment_dirs = []
+    base_dir = "experiments"
+    
+    # Check if experiments directory exists
+    if not os.path.exists(base_dir):
+        print(f"Experiments directory '{base_dir}' not found.")
+        return experiment_dirs
+    
+    # Walk through the experiments directory
+    for root, dirs, files in os.walk(base_dir):
+        # Look for directories that might be experiment runs (have summary files or experiment_ subdirectories)
+        if "experiments_summary.json" in files or "experiments_summary_partial.json" in files:
+            experiment_dirs.append(root)
+            continue
+            
+        # Check if this directory contains experiment_* subdirectories
+        has_experiment_dirs = any(d.startswith("experiment_") for d in dirs)
+        if has_experiment_dirs:
+            experiment_dirs.append(root)
+    
+    print(f"Found {len(experiment_dirs)} experiment directories:")
+    for exp_dir in experiment_dirs:
+        print(f"  - {exp_dir}")
+        
+    return experiment_dirs
+
 def main():
     # Set paths and parameters
     output_dir = "model_analysis_results"
     os.makedirs(output_dir, exist_ok=True)
     
-    # Path to experiment directories
-    experiment_dirs = [
-        "experiments/20250514_173853",
-        "experiments/20250514_173637",
-        "experiments/debug_run/20250514_224704"
-    ]
+    # Dynamically find experiment directories
+    experiment_dirs = find_experiment_directories()
+    
+    if not experiment_dirs:
+        print("No experiment directories found. Exiting.")
+        return
     
     # Data parameters
     val_jsonl = "data/dev.jsonl"
